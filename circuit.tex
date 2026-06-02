@@ -10,18 +10,26 @@
 \usepackage{amsmath}
 \usetikzlibrary{decorations.pathreplacing}
 
+% red C/B/E pin labels on a transistor (matches the physical 2N3904 legs)
+\newcommand{\pinlabels}[1]{%
+  \node[red,font=\bfseries\footnotesize,anchor=south west] at ($(#1.C)+(0.02,0.05)$){C};
+  \node[red,font=\bfseries\footnotesize,anchor=south east] at ($(#1.B)+(-0.02,0.05)$){B};
+  \node[red,font=\bfseries\footnotesize,anchor=north west] at ($(#1.E)+(0.05,-0.05)$){E};
+}
+
 \begin{document}
 \begin{circuitikz}[american, line width=0.7pt]
 
   % ---------- Supply rail (+5 V) ----------
-  \draw (-2.5,5.5) -- (13,5.5);
+  \draw (-2.5,5.5) -- (15,5.5);
   \node[anchor=south] at (5,5.55) {\textbf{$V_{CC} = +5\,\mathrm{V}$}};
 
   % ===================== STAGE 1 : NOR =====================
   \node[npn] (q1) at (3,2.5) {};
-  \node[npn] (q2) at (6,2.5) {};
+  \node[npn] (q2) at (7.5,2.5) {};
   \node[anchor=west] at ($(q1.E)+(0.4,0.15)$) {Q1};
   \node[anchor=west] at ($(q2.E)+(0.4,0.15)$) {Q2};
+  \pinlabels{q1}\pinlabels{q2}
 
   % collectors tied, shared pull-up
   \draw (q1.C) -- (q2.C);
@@ -38,31 +46,31 @@
         to[R, l={$R_{B1}=10\,\mathrm{k}\Omega$}] (q1.B);
   % input B (underneath, vertical base resistor)
   \draw (-2.5,0.3) node[ocirc]{} node[left]{Input $B$}
-        -- (4.6,0.3) to[R, l_={$R_{B2}=10\,\mathrm{k}\Omega$}] (4.6,2.5) -- (q2.B);
-
-  % NOR node label
-  \node[anchor=south] at (7.6,3.1) {$\overline{A+B}$};
+        -- (6.0,0.3) to[R, l={$R_{B2}=10\,\mathrm{k}\Omega$}] (6.0,2.5) -- (q2.B);
 
   % ===================== STAGE 2 : NOT =====================
-  \node[npn] (q3) at (10.5,2.5) {};
+  \node[npn] (q3) at (12,2.5) {};
   \node[anchor=west] at ($(q3.E)+(0.4,0.15)$) {Q3};
+  \pinlabels{q3}
 
   % interstage: NOR collector node -> base of Q3
-  \draw (q2.C) -- (7.6,3.0) -- (7.6,2.5) to[R, l={$R_{B3}=10\,\mathrm{k}\Omega$}] (q3.B);
+  \draw (q2.C) -- (9.0,3.0) -- (9.0,2.5) to[R, l={$R_{B3}=10\,\mathrm{k}\Omega$}] (q3.B);
+  % NOR node label
+  \node[anchor=south] at (9.0,3.1) {$\overline{A+B}$};
 
   % Q3 emitter to ground, collector pull-up
   \draw (q3.E) -- ++(0,-1.1) node[ground]{};
-  \draw (q3.C) to[R, l_={$R_{C3}=1\,\mathrm{k}\Omega$}] (10.5,5.5);
-  \fill (10.5,5.5) circle (1.6pt);
+  \draw (q3.C) to[R, l_={$R_{C3}=1\,\mathrm{k}\Omega$}] (12,5.5);
+  \fill (12,5.5) circle (1.6pt);
 
   % output
-  \draw (q3.C) -- ++(2.2,0) node[ocirc]{} node[right]{Output $Y=A+B$};
+  \draw (q3.C) -- ++(2.5,0) node[ocirc]{} node[right]{Output $Y=A+B$};
 
   % ---------- stage brackets ----------
   \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.5pt]
-        (-2.6,-1.3) -- (7.0,-1.3) node[midway, below=6pt]{\small Stage 1: NOR};
+        (-2.6,-1.3) -- (8.5,-1.3) node[midway, below=6pt]{\small Stage 1: NOR};
   \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.5pt]
-        (8.2,-1.3) -- (12.9,-1.3) node[midway, below=6pt]{\small Stage 2: NOT};
+        (9.8,-1.3) -- (14.8,-1.3) node[midway, below=6pt]{\small Stage 2: NOT};
 
 \end{circuitikz}
 \end{document}
