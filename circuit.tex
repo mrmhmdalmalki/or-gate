@@ -47,8 +47,8 @@
   \fill (top|-0,5.5) circle (1.6pt);
 
   % emitters to ground
-  \draw (q1.E) -- ++(0,-1.1) pic{gnd};
-  \draw (q2.E) -- ++(0,-1.1) pic{gnd};
+  \draw (q1.E) -- ++(0,-1.8) pic{gnd};
+  \draw (q2.E) -- ++(0,-1.8) pic{gnd};
 
   % input A
   \draw (-2.5,2.5) node[ocirc]{} node[left]{Input $A$}
@@ -68,7 +68,7 @@
   \node[anchor=south] at (9.0,3.1) {$\overline{A+B}$};
 
   % Q3 emitter to ground, collector pull-up
-  \draw (q3.E) -- ++(0,-1.1) pic{gnd};
+  \draw (q3.E) -- ++(0,-1.8) pic{gnd};
   \draw (q3.C) to[R, l_={$R_{C3}=1\,\mathrm{k}\Omega$}] (12,5.5);
   \fill (12,5.5) circle (1.6pt);
 
