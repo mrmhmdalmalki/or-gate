@@ -1,85 +1,36 @@
 % ============================================================
-%  OR gate - transistor-level realization
-%      OR = NOR followed by a NOT gate
-%  Stage 1 (Q1,Q2 in parallel) = NOR  -> gives NOT(A+B)
-%  Stage 2 (Q3)                = NOT   -> inverts back to (A+B)
+%  OR gate - logic diagram.
+%  OR = a NOR gate followed by a NOT gate:
+%        Y = NOT(NOT(A+B)) = A+B
+%  Both sub-gates already exist in this project (transistor-level):
+%  the NOR board and the NOT board.  Nothing new to build - just
+%  wire a NOR board's output into a NOT board.
 %  Compile:  pdflatex circuit.tex
 % ============================================================
-\documentclass[border=12pt]{standalone}
+\documentclass[border=16pt]{standalone}
 \usepackage{circuitikz}
 \usepackage{amsmath}
-\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{calc}
 
-% red C/B/E pin labels on a transistor (matches the physical 2N3904 legs)
-\newcommand{\pinlabels}[1]{%
-  \node[red,font=\bfseries\footnotesize,anchor=south west] at ($(#1.C)+(0.02,0.05)$){C};
-  \node[red,font=\bfseries\footnotesize,anchor=south east] at ($(#1.B)+(-0.02,0.05)$){B};
-  \node[red,font=\bfseries\footnotesize,anchor=north west] at ($(#1.E)+(0.05,-0.05)$){E};
-}
-
-% ground symbol (pic): same stroke as everything, just extra gap between bars
-\tikzset{gnd/.pic={
-  \draw
-    (0,0) -- (0,-0.18)
-    (-0.34,-0.18) -- (0.34,-0.18)
-    (-0.21,-0.37) -- (0.21,-0.37)
-    (-0.08,-0.56) -- (0.08,-0.56);
-}}
 \begin{document}
-\begin{circuitikz}[american, line width=0.8pt]
-  \ctikzset{tripoles/thickness=1, bipoles/thickness=1, logic ports/thickness=1}
+\begin{circuitikz}[line width=1.0pt, scale=1.5, transform shape]
+  \ctikzset{logic ports=american, logic ports/thickness=1.1}
 
-  % ---------- Supply rail (+5 V) ----------
-  \draw (-2.5,5.5) -- (15,5.5);
-  \node[anchor=south] at (5,5.55) {\textbf{$V_{CC} = +5\,\mathrm{V}$}};
+  \node[nor port] (g1) at (0,0)   {};
+  \node[not port] (g2) at (3.8,0) {};
+  \node[below=4pt,font=\footnotesize] at (g1.south) {NOR};
+  \node[below=4pt,font=\footnotesize] at (g2.south) {NOT};
 
-  % ===================== STAGE 1 : NOR =====================
-  \node[npn] (q1) at (3,2.5) {};
-  \node[npn] (q2) at (7.5,2.5) {};
-  \node[anchor=west] at ($(q1.E)+(0.4,0.15)$) {Q1};
-  \node[anchor=west] at ($(q2.E)+(0.4,0.15)$) {Q2};
-  \pinlabels{q1}\pinlabels{q2}
+  % inputs A, B
+  \draw (g1.in 1) -- ++(-1.5,0) node[ocirc]{} node[left]{$A$};
+  \draw (g1.in 2) -- ++(-1.5,0) node[ocirc]{} node[left]{$B$};
 
-  % collectors tied, shared pull-up
-  \draw (q1.C) -- (q2.C);
-  \coordinate (top) at ($(q1.C)!0.5!(q2.C)$);
-  \draw (top) to[R, l_={$R_{C1}=1\,\mathrm{k}\Omega$}] (top|-0,5.5);
-  \fill (top|-0,5.5) circle (1.6pt);
-
-  % emitters to ground
-  \draw (q1.E) -- ++(0,-1.8) pic{gnd};
-  \draw (q2.E) -- ++(0,-1.8) pic{gnd};
-
-  % input A
-  \draw (-2.5,2.5) node[ocirc]{} node[left]{Input $A$}
-        to[R, l={$R_{B1}=10\,\mathrm{k}\Omega$}] (q1.B);
-  % input B (underneath, vertical base resistor)
-  \draw (-2.5,0.3) node[ocirc]{} node[left]{Input $B$}
-        -- (6.0,0.3) to[R, l={$R_{B2}=10\,\mathrm{k}\Omega$}] (6.0,2.5) -- (q2.B);
-
-  % ===================== STAGE 2 : NOT =====================
-  \node[npn] (q3) at (12,2.5) {};
-  \node[anchor=west] at ($(q3.E)+(0.4,0.15)$) {Q3};
-  \pinlabels{q3}
-
-  % interstage: NOR collector node -> base of Q3
-  \draw (q2.C) -- (9.0,3.0) -- (9.0,2.5) to[R, l_={$R_{B3}=10\,\mathrm{k}\Omega$}] (q3.B);
-  % NOR node label
-  \node[anchor=south] at (9.0,3.1) {$\overline{A+B}$};
-
-  % Q3 emitter to ground, collector pull-up
-  \draw (q3.E) -- ++(0,-1.8) pic{gnd};
-  \draw (q3.C) to[R, l_={$R_{C3}=1\,\mathrm{k}\Omega$}] (12,5.5);
-  \fill (12,5.5) circle (1.6pt);
+  % NOR output -> NOT input
+  \draw (g1.out) -- (g2.in);
+  \node[above=1pt,font=\footnotesize] at ($(g1.out)!0.5!(g2.in)$) {$\overline{A+B}$};
 
   % output
-  \draw (q3.C) -- ++(2.5,0) node[ocirc]{} node[right]{Output $Y=A+B$};
-
-  % ---------- stage brackets ----------
-  \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.8pt]
-        (-2.6,-1.3) -- (8.5,-1.3) node[midway, below=6pt]{\small Stage 1: NOR};
-  \draw[decorate, decoration={brace, amplitude=5pt}, line width=0.8pt]
-        (9.8,-1.3) -- (14.8,-1.3) node[midway, below=6pt]{\small Stage 2: NOT};
+  \draw (g2.out) -- ++(1.6,0) node[ocirc]{} node[right]{Output $Y=A+B$};
 
 \end{circuitikz}
 \end{document}
